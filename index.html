@@ -1,0 +1,812 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>OpenTelemetry</title>
+
+    <!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reset.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/plugin/highlight/monokai.min.css">-->
+    <link rel="stylesheet" href="./css/reset.min.css">
+    <link rel="stylesheet" href="./css/reveal.min.css">
+    <link rel="stylesheet" href="./css/monokai.min.css">
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+<div class="reveal">
+    <div class="slides">
+        <section>
+            <section class="section-title" data-background-image="./assets/intro.jpg" style="display: block;">
+                <h1 style="color: #1973eb;">OpenTelemetry en Production</h1>
+                <h3 style="color: #000;">REX d'un Voyage Vers l'Observabilité Moderne</h3>
+				<br><br>
+				<img src="./assets/cloud_nord.png" style="width: 20%;">
+            </section>
+            <section data-markdown="" data-markdown-parsed="true" class="present" style="display: block;">
+                <p>Who am I</p>
+                <h1>Maximilien Chevalier</h1>
+                <img src="./assets/max.png" class="img-right">
+                <ul>
+                    <li><img src="./assets/axa.svg"  style="width: 2%;""> Staff Engineer @ Axa France</li>
+					<li>🎓 Enseignant vacataire @ Université de Lille</li>
+                    <li>🍃 Spring Boot lover</li>
+                    <li>🐋 Kubernetes adopter</li>
+                    <li><img src="./assets/linkedin.svg" style="width: 2%;"> Maximilien Chevalier</li>
+                </ul>
+            </section>
+			<section class="section-conclusion center">
+				<h1 style="color: #1973eb;">Pourquoi OpenTelemetry ?</h1>
+                <aside class="notes">
+                    <ul>
+                        <li>Vous vous êtes sûrement demandé si OpenTelemetry est fait pour vous.</li>
+                        <li>Vous vous demandez comment l'adopter dans votre environnement.</li>
+                        <li>Vous vous demandez quels sont les avantages et les inconvénients d'OpenTelemetry.</li>
+                        <li>Vous vous demandez comment convaincre votre équipe de l'adopter.</li>
+                    </ul>
+                </aside>
+            </section>
+        </section>
+        <section>
+            <section style="display: block;">
+                <h1 style="color: #1973eb;">C'est quoi l'Observabilité ?</h1>
+                <img src="./assets/observability.png" class="img-right visible">
+                <p>L'observabilité : c'est la capacité de comprendre l'état interne des systèmes en examinant ses sorties.</p>
+                <ul>
+                    <li>Les 3 piliers :
+                        <ul>
+                            <li>metrics</li>
+                            <li>traces</li>
+                            <li>logs</li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul style="font-size: 0.7em">* :
+                    <li>SM = System Monitoring</li>
+                    <li>APM = Application Performance Monitoring</li>
+                    <li>RUM = Real User Monitoring</li>
+                </ul>
+                <aside class="notes">
+                    <ul>
+                        <li>Définition globale </li>
+                        <li>Les 3 pillars de l'observabilité : traces, logs et métriques</li>
+                        <li>"Observabilité" vous permet de comprendre un système de l'extérieur en vous permettant de poser des questions sur ce système sans connaître son fonctionnement interne.</li>
+                        <li>De plus, cela vous permet de résoudre facilement et de gérer des problèmes nouveaux, c'est-à-dire des "inconnus inconnus". Cela vous aide également à répondre à la question "Pourquoi cela se produit-il?".</li>
+                    </ul>
+                </aside>
+            </section>
+            <section class="section-title" data-background-image="./assets/metrics.jpg" style="display: block;">
+                <h1 style="color: #1973eb;">Metrics</h1>
+                <ul>
+                    <li>Exemples :
+                        <ul>
+                            <li>Le taux d'utilisation CPU</li>
+                            <li>mémoire consommée</li>
+                            <li>temps de réponse</li>
+                            <li>taux d'erreur/de succès<br>(nb de requêtes OK/KO<br>sur une plage de temps donnée)</li>
+                            <li>...</li>
+                        </ul>
+                    </li>
+                </ul>
+                <aside class="notes">
+                    <ul>
+                        <li>Quantitatif !</li>
+                        <li>Les métriques sont des mesures quantitatives qui fournissent des informations sur les performances, l'utilisation des ressources et le comportement des systèmes informatiques</li>
+                        <li>Elles sont utilisées pour surveiller, analyser et optimiser les systèmes, et comprennent des données telles que le temps de réponse, le débit, l'utilisation du CPU, la consommation de mémoire, etc.</li>
+                        <li>Types de métriques:
+                            <ul>
+                                <li>COUNT</li>
+                                <li>RATE</li>
+                                <li>GAUGE</li>
+                                <li>SET</li>
+                                <li>HISTOGRAM</li>
+                                <li>DISTRIBUTION</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </aside>
+            </section>
+            <section class="section-title" data-background-image="./assets/metrics_health.jpg" style="display: block;">
+                <h1 style="color: #1973eb;">L'état de santé<br>de son application</h1>
+                <aside class="notes">
+                    <ul>
+                        <li>analogie avec le pouls, la tension, ...</li>
+                    </ul>
+                </aside>
+            </section>
+            <section>
+                <h1>Traces</h1>
+                <img src="./assets/traces.png" class="img-full">
+                <aside class="notes">
+                    <ul>
+                        <li>Le tracing (ou traçage) consiste à suivre le cheminement d'une requête ou d'une transaction à travers un système distribué.</li>
+                        <li>Cela permet de visualiser et d'analyser le flux des requêtes à travers les différents composants d'une application, ce qui est utile pour diagnostiquer les goulots d'étranglement, les performances et les comportements inattendus.</li>
+                    </ul>
+                </aside>
+            </section>
+            <section>
+                <h1 style="color: #1973eb;">Vue hiérarchique d'un processus</h1>
+                <img src="./assets/traces_analogy.jpg" class="img-right visible" style="width: 35%">
+                <p>Une trace a toujours un parent</p>
+                <p>Une trace correspond à une requête ou une transaction pour un utilisateur donnée à travers un système distribué</p>
+            </section>
+            <section>
+                <h1>Logs</h1>
+                <img src="./assets/logs.png" class="img-full">
+                <aside class="notes">
+                    <ul>
+                        <li>Les logs sont des enregistrements chronologiques des événements et des actions qui se produisent dans un système informatique. Ils fournissent une traçabilité des opérations, des erreurs, des avertissements et d'autres
+                            informations utiles pour le débogage, la surveillance et l'analyse des systèmes.
+                        </li>
+                    </ul>
+                </aside>
+            </section>
+            <section class="section-title" data-background-image="./assets/logs_analogy.JPG" style="display: block;">
+                <h1 style="color: #1973eb;">Les logs<br>représentent<br>des évènements applicatifs</h1>
+            </section>
+            <section class="section-title" data-background-image="./assets/tracestologstometrics.png" style="display: block;">
+                <h1 style="color: #1973eb;">Correlation Metrics, Logs & Traces</h1>
+                <ul>
+                    <li>Traces to Logs</li>
+                    <li>Logs to Metrics</li>
+                    <li>Metrics to Traces</li>
+                </ul>
+                <aside class="notes">
+                    TraceId vs axa-correlation-id
+                </aside>
+            </section>
+        </section>
+        <section>
+            <section data-markdown="" data-markdown-parsed="true" class="present" style="display: block;">
+                <h1>OpenTelemetry, c'est quoi ?</h1>
+                <img src="./assets/opentelemetry.svg" class="img-full">
+                <aside class="notes">
+                </aside>
+            </section>
+            <section style="display: block;">
+                <h1 style="color: #1973eb;">CNCF 🚅</h1>
+                <img src="./assets/CNCF_Logo.jpg" class="img-center">
+                <img src="./assets/cncf_observability.png" class="img-center">
+                <aside class="notes">
+                    <ul>
+                        <li>Projet faisant partie de la Linux Foundation</li>
+                        <li>Incubateur de projet</li>
+                        <li>C'est une initative Opensource, vendor-neutral pour autour des applications sur le cloud</li>
+                        <li>First was Kubernetes, CNCF foundation was announced alongside Kubernetes 1.0</li>
+                        <li>And second project was Prometheus</li>
+                        <li>The Cloud Native Computing Foundation (CNCF) is a Linux Foundation project that was started in 2015 to help advance container technology and align the tech industry around its evolution.</li>
+                    </ul>
+                </aside>
+            </section>
+            <section>
+                <h1>Vélocité </h1>
+                <img src="./assets/velocity.png" class="img-full" style="width: 70%;">
+                <aside class="notes">
+                </aside>
+            </section>
+            <section>
+                <h1 style="color: #1973eb;">OpenTelemetry</h1>
+                <ul>
+                    <li>un standard (W3C compliant)</li>
+                    <li>un protocole</li>
+                    <li>des librairies et SDK (multi-langages)</li>
+                    <li>des outils (Collector)</li>
+                </ul>
+            </section>
+            <section class="section-title" data-background-image="./assets/otlp.jpg" style="display: block;">
+                <h1 style="color: #1973eb;">OTLP est le HTTP<br>de l'observabilité</h1>
+            </section>
+        </section>
+        <section>
+            <section class="section-title" data-background-image="./assets/enterprise.jpg" style="display: block;">
+                <h1 style="color: #1973eb;">Axa FR et l'Observabilité</h1>
+            </section>
+            <section data-markdown="" data-markdown-parsed="true" class="present" style="display: block;">
+                <h1>Plein de solutions différentes</h1>
+                <table>
+                    <tr>
+                        <td style="border-bottom: none;"><img src="./assets/dynatrace.jpg" width="300px;"></td>
+                        <td style="border-bottom: none;"><img src="./assets/appinsights.png" width="300px;"></td>
+                        <td style="border-bottom: none;"><img src="./assets/vigi_logo.png" width="320px;"></td>
+                        <td style="border-bottom: none;"><img src="./assets/EOS.png" width="320px;"></td>
+                    </tr>
+                </table>
+            </section>
+            <section data-markdown="" data-markdown-parsed="true" class="present" style="display: block;">
+                <h1>Dynatrace</h1>
+                <img src="./assets/dynatrace.jpg" class="img-right visible">
+                <ul>
+                    <li>Gourmand en ressources</li>
+                    <li>Agent intrusif</li>
+                    <li>Uniquement pour les systèmes critiques</li>
+                </ul>
+            </section>
+            <section data-markdown="" data-markdown-parsed="true" class="present" style="display: block;">
+                <h1>AppInsights</h1>
+                <img src="./assets/appinsights.png" class="img-right visible">
+                <ul>
+                    <li>Hyper bien intégré au sein des assets Azure</li>
+                    <li>Support OpenTelemetry pour exporter les data</li>
+                    <li>Surcouche à l'agent OpenTelementry</li>
+                    <li>Vendor locking</li>
+                </ul>
+            </section>
+            <section data-markdown="" data-markdown-parsed="true" class="present" style="display: block;">
+                <h1>Vigi</h1>
+                <img src="./assets/vigi_logo.png" class="img-right visible">
+                <ul>
+                    <li>Application historique développée en interne</li>
+                    <li>Configuration manuelle</li>
+                    <li>Mode scrap pour brancher les systèmes/application</li>
+                </ul>
+            </section>
+            <section data-markdown="" data-markdown-parsed="true" class="present" style="display: block;">
+                <h1>EOS / OSIA (Outil de Suivi Inter-Applicatif)</h1>
+                <img src="./assets/OSIA.png" class="img-right visible">
+                <ul>
+                    <li>axa-correlation-id / axa-feature-name / axa-feature-id</li>
+                    <li>format de logs standard : {Timestamp};{MachineName};{ThreadName};{RequestId};{Severity};{ApplicativeCode};{ErrorCode};{CorrelationId};{SessionId};{ProcessName};{Message};{StackTrace}</li>
+                </ul>
+            </section>
+            <section>
+                <img src="./assets/OSIA_kibana.png" >
+                <aside class="notes">
+                </aside>
+            </section>
+        </section>
+        <section>
+            <section>
+                <h1>Le POC Axa FR</h1>
+                <img src="./assets/mvp.png" class="img-full" style="width: 90%;">
+            </section>
+            <section class="section-conclusion center">
+                <h1 style="color: #1973eb;">“La clé de l'Observabilité c'est la donnée - mais elle n'est utile que si vous la structurez, la faites transiter et l'exploitez correctement”</h1>
+                <aside class="notes">
+                    <p>On instrumente pour diagnostiquer, mesurer, alerter et améliorer. Mais la chaîne se casse souvent « avant / dans / après » le collecteur. On va détailler les pièges et les bonnes pratiques sur chaque segment.</p>
+                </aside>
+            </section>
+        </section>
+        <section>
+            <section class="section-title" data-background-image="./assets/avant.png" style="display: block;">
+                <h1 style="color: #1973eb;">🔧 Avant le collecteur</h1>
+            </section>
+            <section>
+                <h1 style="color: #1973eb;">📜 Conventions et gouvernance</h1>
+                <ul>
+                    <li>Définir un schéma unique pour service.name (ex : team.domain.service ou product-service-env)</li>
+                    <li>Standards de tags/attributs : env, region, cluster, zone, version, owner, team</li>
+                </ul>
+                <p><pre><code data-trim data-noescape>
+                  env:
+                    - name: OTEL_SERVICE_NAME
+                      value: "AFA@1234@1234-APISouscription"
+                    - name: OTEL_NAMESPACE
+                      valueFrom:
+                        fieldRef:
+                          fieldPath: metadata.namespace
+                    - ...
+                </code></pre></p>
+                <aside class="notes">
+                    Ubiquitous Language : service.name unique permet d'agréger correctement
+                </aside>
+            </section>
+            <section>
+                <h1 style="color: #1973eb;">🔗 Propagation de contexte</h1>
+                <ul>
+                    <li><a target="_blank" href="https://w3c.github.io/trace-context/">W3C Trace Context</a> : vérifier que tous les frameworks et clients l'implémentent</li>
+                    <li>Baggage (utiliser avec parcimonie)</li>
+                </ul>
+                <aside class="notes">
+                    Baggage : permet de propager des metadata business (ex: user-id, session-id) à travers les services. 
+                    <ul>
+                        <li>Propagation globale : attention à ne pas surcharger les headers HTTP</li>
+                        <li>Performance : trop d'éléments peuvent impacter la latence et augmenter le coût réseau</li>
+                        <li>Sécurité : ne pas propager d'informations sensibles (ex : tokens, mots de passe)</li>
+                        <li>Lisibilité : complexifie l'analyse des traces</li>
+                    </ul>
+                </aside>
+            </section>
+            <section>
+                <h1 style="color: #1973eb;">🧩 Semantic Conventions</h1>
+                <ul>
+                    <li>Respecter les conventions OTel (HTTP, DB, RPC, messaging) pour faciliter les analyses cross-stack</li>
+                    <li><a target="_blank" href="https://opentelemetry.io/docs/reference/specification/trace/semantic_conventions/">Semantic Conventions | OpenTelemetry</a></li>
+                    <li>Exemples : 
+                        <ul>
+                            <li>http.method, http.url, http.status_code</li>
+                            <li>db.system, db.name, db.statement</li>
+                            <li>messaging.system, messaging.destination, messaging.message_id</li>
+                        </ul>
+                </ul>
+                <aside class="notes">
+                    <ul>
+                        <li>Exemple : pour une requête HTTP, utiliser les attributs standardisés comme http.method, http.url, http.status_code</li>
+                        <li>Avantage : facilite la corrélation et l'agrégation des données entre différents services et outils</li>
+                    </ul>
+                </aside>
+            </section>
+            <section>
+                <h1 style="color: #1973eb;">🤖 Auto-instrumentation vs ✍️ instrumentation manuelle</h1>
+                <ul>
+                    <li>Auto-instr: rapide, mais vérifier la qualité des spans auto-créés (noms, attributes)</li>
+                    <li>Manuelle: pour le business logic, durable et sémantique</li>
+                    <li><a target="_blank" href="https://opentelemetry.io/docs/zero-code/java/spring-boot-starter/">Spring Boot starter | OpenTelemetry</a></li>
+                </ul>
+                <aside class="notes">
+                    Besoin de compilation native, impact de l'overhead, présence d'un autre agent (ex: Dynatrace)
+                </aside>
+            </section>
+            <section>
+                <h1 style="color: #1973eb;">📈 Metrics vs 📊 Traces vs 📝 Logs</h1>
+                <ul>
+                    <li>Décider ce qui relève de la métrique (agrégation de données), de la trace (flux de requêtes), ou du log (informations détaillées).</li>
+                    <li>Exemple : pour surveiller le taux d'erreur, utiliser une métrique. Pour diagnostiquer une requête lente, utiliser une trace. Pour comprendre un échec spécifique, utiliser un log.</li>
+                    <li>Un use case chez nous a été de cartographier au démarrage nos applications Spring en émettant un metric avec le nom de l'artifact, la version, etc...</li>
+                </ul>
+                <aside class="notes">
+                    <ul>
+                        <li>Metrics : pour les tendances et alertes (ex: taux d'erreur, latence moyenne)</li>
+                        <li>Traces : pour le diagnostic détaillé (ex: requête spécifique, flux de requêtes)</li>
+                        <li>Logs : pour les détails contextuels (ex: erreurs spécifiques, événements)</li>
+                    </ul>
+                </aside>
+            </section>
+            <section>
+                <h1 style="color: #1973eb;">🧪🤖 Test & CI</h1>
+                <ul>
+                    <li>Tests d'instrumentation (InMemorySpanExporter / assertions)</li>
+                    <li>Contrôles en pipeline : vérification de présence de service.name et d'attributes critiques</li>
+                </ul>
+                <aside class="notes">
+                </aside>
+            </section>
+            <section>
+                <h1 style="color: #1973eb;">🔒 Sécurité & privacy</h1>
+                <ul>
+                    <li>Ne pas loguer de données sensibles</li>
+                    <li>Certificats et secrets pour exporter (OTLP TLS / tokens)</li>
+                    <li>Network policies</li>
+                </ul>
+                <aside class="notes">
+                </aside>
+            </section>
+            <section>
+                <h1 style="color: #1973eb;">🚀 Versioning & déploiement</h1>
+                <ul>
+                    <li>Standardiser instrumentation starter (starter libs) pour homogénéité</li>
+                    <li>Définir un template Kubernetes avec les variables d'env</li>
+                </ul>
+                <aside class="notes">
+                </aside>
+            </section>
+            <section>
+                <h1 style="color: #1973eb;">👨‍💻 Developer experience</h1>
+                <img src="./assets/wiki.png" class="img-right" style="width: 30%;">
+                <ul>
+                    <li>Tooling local : collector local/agent pour dev, debug facile</li>
+                    <li>Documentation claire et exemples d'instrumentation</li>
+                    <li>Formation et sensibilisation des devs</li>
+                    <li>Centralisation pour simplifier l'accès aux outils et aux ressources (ex: IDP, wiki)</li>
+                </ul>
+                <aside class="notes">
+                </aside>
+            </section>
+        </section>
+        <section>
+            <section class="section-title" data-background-image="./assets/pendant.png" style="display: block;">
+                <h1 style="color: #1973eb;">⚙️ Le collecteur</h1>
+            </section>
+            <section>
+                <h1 style="color: #1973eb;">🌐 Topology de déploiement</h1>
+                <ul>
+                    <li>No Collector vs Agent vs Collector centralisé</li>
+                    <li>Compromis : latence, résilience, coût, isolation réseau</li>
+                    <li><a target="_blank" href="https://opentelemetry.io/docs/collector/deployment/">Deployment | OpenTelemetry</a></li>
+                </ul>
+                <aside class="notes">
+                </aside>
+            </section>
+            <section>
+                <h1 style="color: #1973eb;">No Collector</h1>
+                <img src="./assets/otel-sdk.svg" class="img-full">
+                <aside class="notes">
+                </aside>
+            </section>
+            <section>
+                <h1 style="color: #1973eb;">Agent</h1>
+                <img src="./assets/otel-agent-sdk.svg">
+                <aside class="notes">
+                </aside>
+            </section>
+            <section>
+                <h1 style="color: #1973eb;">Gateway</h1>
+                <img src="./assets/otel-gateway-sdk.svg" class="img-full">
+                <aside class="notes">
+                </aside>
+            </section>
+            <section>
+                <img src="./assets/collector.png" class="img-full">
+                <aside class="notes">
+                </aside>
+            </section>
+            <section>
+                <h1 style="color: #1973eb;">SPOF ?</h1>
+                <ul>
+                    <li>Tuning fin nécessaire pour le collector</li>
+                    <li>Enorme throughput/volumétrie sur une architecture centralisée</li>
+                    <li>Que faire si un exporter tombe ? Backlog sur disque, dead-letter ?</li>
+                    <li>Tester la charge d'ingestion à l'avance (simuler du trafic) pour dimensionner les pipelines.</li>
+                </ul>
+                <aside class="notes">
+                </aside>
+            </section>
+            <section>
+                <img src="./assets/otel-collector.svg" class="img-full">
+                <aside class="notes">
+                </aside>
+            </section>
+            <section>
+                <h1 style="color: #1973eb;">🔌 Receivers / ⚙️ Processors / 📤 Exporters / 🛤️ Pipelines</h1>
+                <ul>
+                    <li>Receivers (OTLP gRPC/HTTP), processors (batch, memory_limiter, attributes, sampling), exporters (OTLP, Prometheus, Tempo, Loki).</li>
+                    <li>Séparer les pipelines traces/metrics/logs.</li>
+                    <li>Configurer queued_retry + disk buffer pour absorber les pics et le backpressure.</li>
+                    <li>Adapter la taille des batchs et le timeout selon la latence tolérée.</li>
+                </ul>
+                <aside class="notes">
+                </aside>
+            </section>
+            <section>
+                <h1 style="color: #1973eb;">🎲 Sampling (head vs tail)</h1>
+                <ul>
+                    <li>Définir un sampling « head » conservateur (ex: 1-10%) et planifier tail-based sampling côté collector</li>
+                    <li>Le sampler applique un pourcentage d'échantillonnage sur le TraceID et reconnait l'annotation sampling.priority</li>
+                    <li>Vous n'aurez pas le même besoin sur l'environnement de production par rapport à l'environnement de développement.</li>
+                    <li><a target="_blank" href="https://opentelemetry.io/docs/concepts/sampling/">Sampling | OpenTelemetry</a></li>
+                </ul>
+                <aside class="notes">
+                    <ul>
+                        <li>Head sampling : décider de conserver ou non une trace au moment de sa création (avant envoi au collector). Simple et efficace pour réduire le volume initial, mais peut manquer de contexte global.</li>
+                        <li>Tail sampling : décider de conserver ou non une trace après avoir vu son ensemble (après envoi au collector). Permet des décisions plus informées basées sur le contexte complet, mais nécessite plus de ressources et de complexité.</li>
+                    </ul>
+                </aside>
+            </section>
+            <section>
+                <h1>La configuration du collector - Receiver</h1>
+                <pre data-id="code-animation">
+							<code class="hljs shell" data-trim data-line-numbers="2-5|6-7">
+								<script type="text/template">
+								receivers:
+								  otlp:
+								    protocols:
+								      grpc:
+								        endpoint: collector:4317
+								      http:
+								        endpoint: collector:4318
+								</script>
+							</code>
+						</pre>
+                <aside class="notes">
+                </aside>
+            </section>
+            <section>
+                <h1>La configuration du collector - Processor</h1>
+                <pre data-id="code-animation">
+							<code class="hljs shell" data-trim data-line-numbers="2-5|6-8|9-10|11-24|25-31|32-36"><script type="text/template">
+								processors:
+								  memory_limiter:
+									check_interval: 1s
+									limit_percentage: 50
+									spike_limit_percentage: 30
+								  batch:
+									timeout: 1s
+									send_batch_size: 1024
+								  probabilistic_sampler:
+									sampling_percentage: 10
+								  tail_sampling:
+									policies:
+									- name: drop_noisy_traces_url
+									string_attribute:
+									    enabled_regex_matching: true
+									    invert_match: true
+									    key: url.path
+									    values:
+									    - \/metrics
+									    - \/actuator*
+									    - opentelemetry\.proto
+									    - favicon\.ico
+									    - \/health
+									type: string_attribute
+								  transform:
+									error_mode: ignore
+									metric_statements:
+									  - context: metric
+										statements:
+										  - set(description, "Measure of memory committed.") where name == "jvm_memory_committed_bytes"
+										  - set(description, "Measure of memory used.") where name == "jvm_memory_used_bytes"
+								  resource:
+									attributes:
+									  - action: insert
+										key: loki.resource.labels
+										value: service.name
+							</script></code>
+						</pre>
+                <aside class="notes">
+                    <ul>
+                        <li>memory_limiter : empêche le collector de consommer toute la mémoire disponible</li>
+                        <li>batch : regroupe les données pour réduire le nombre de requêtes sortantes</li>
+                        <li>probabilistic_sampler : échantillonnage simple basé sur un pourcentage fixe</li>
+                        <li>tail_sampling : échantillonnage avancé basé sur des règles après avoir vu la trace complète</li>
+                        <li>transform : modifier ou enrichir les données (ex: ajouter des attributs, renommer des métriques)</li>
+                        <li>resource : ajouter des attributs globaux à toutes les données (ex: service.name, environment)</li>
+                    </ul>
+                </aside>
+            </section>
+            <section>
+                <h1>La configuration du collector - Exporters</h1>
+                <pre data-id="code-animation">
+							<code class="hljs shell" data-trim data-line-numbers="2-5|6-9|10-29"><script type="text/template">
+								exporters:
+								  otlphttp:
+									endpoint: loki:9096
+									tls:
+									  insecure: true
+								  otlp/tempo:
+									endpoint: tempo:4317
+									tls:
+									  insecure: true
+								  prometheusremotewrite:
+									add_metric_suffixes: true
+									endpoint: "http://prometheus:9090/api/v1/write"
+									max_batch_size_bytes: 8000
+									remote_write_queue:
+									  num_consumers: 5
+									  queue_size: 4000
+									resource_to_telemetry_conversion:
+									  enabled: true
+									retry_on_failure:
+									  enabled: true
+									  initial_interval: 200ms
+									  max_elapsed_time: 60s
+									  max_interval: 5s
+									send_metadata: false
+									target_info:
+									  enabled: false
+									timeout: 20s
+									tls:
+									  insecure: true
+							</script></code>
+						</pre>
+                <aside class="notes">
+                </aside>
+            </section>
+            <section>
+                <h1>La configuration du collector - Services</h1>
+                <pre data-id="code-animation">
+							<code class="hljs shell" data-trim data-line-numbers="2|3-6|8-16|17-25|26-34"><script type="text/template">
+								service:
+								  extensions: [health_check]
+								  telemetry:
+									metrics:
+									  address: 0.0.0.0:8888
+									  level: basic
+								  pipelines:
+									metrics:
+									  receivers:
+										- otlp
+										- hostmetrics
+									  processors:
+										- transform
+									  exporters:
+										- otlp/elastic
+										- prometheusremotewrite
+									traces:
+									  receivers:
+										- otlp
+									  processors:
+										- batch
+									  exporters:
+										- otlp/elastic
+										- otlp/jaeger
+										- otlp/tempo
+									logs:
+									  receivers:
+										- otlp
+									  processors:
+										- attributes
+										- resource
+									  exporters:
+										- otlphttp
+										- otlp/elastic
+							</script></code>
+						</pre>
+                <aside class="notes">
+                </aside>
+            </section>
+            <section>
+                <h1 style="color: #1973eb;">🧠 Memory & 🖥️ CPU limits</h1>
+                <ul>
+                    <li>Le collector consomme beaucoup de mémoire si mal configuré (tail sampling, grosses files d'attente).</li>
+                    <li>Définir le bon nombre de replicas pour le collector en fonction de la charge attendue.</li>
+                    <li>Configurer limits, requests, HPA/Cluster autoscaler.</li>
+                    <li>Configurer la variable d'environnement GOMEMLIMIT <a target="_blank" href="https://github.com/open-telemetry/opentelemetry-collector/blob/main/processor/memorylimiterprocessor/README.md#best-practices">Best Practices | Memory Limiter Processor</a></li>
+                </ul>
+                <aside class="notes">
+                </aside>
+            </section>
+            
+            <section>
+                <h1 style="color: #1973eb;">🧐 Observability du collector</h1>
+                <ul>
+                    <li>Le collector doit exporter ses propres metrics, logs et endpoints de santé.</li>
+                    <li>Scraper ou envoyer les metrics du collector vers Prometheus.</li>
+                </ul>
+                <aside class="notes">
+                </aside>
+            </section>
+            <section data-background-iframe="./assets/observ_collector.jpeg" data-background-interactive>
+            </section>
+            <section>
+                <h1 style="color: #1973eb;">💾 Configuration as Code & 🤖 CI</h1>
+                <ul>
+                    <li>Stocker la configuration du collector dans Git, déployer via GitOps.</li>
+                    <li>Utiliser Helm pour faciliter la gestion des configurations Kubernetes et des mises à jour <a target="_blank" href="https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-collector/README.md">OpenTelemetry Collector Helm Chart</a></li>
+                    <li><a target="_blank" href="https://www.otelbin.io/?#config=exporters%3A*N__otlp%2Ftempo%3A*N____endpoint%3A_*S%7Benv%3ATEMPO*_URL%7D*N____retry*_on*_failure%3A*N______enabled%3A_false*N____sending*_queue%3A*N______num*_consumers%3A_4*N______queue*_size%3A_4000*N____tls%3A*N______insecure%3A_true*N__otlphttp%3A*N____endpoint%3A_*S%7Benv%3ALOKI*_URL%7D*N____tls%3A*N______insecure%3A_true*N__otlphttp%2Fdynatrace%3A*N____timeout%3A_15s*N____retry*_on*_failure%3A*N______enabled%3A_true*N____endpoint%3A_*S%7Benv%3ADT*_ENDPOINT%7D*N____headers%3A*N______Authorization%3A_Api-Token_*S%7Benv%3ADT*_API*_TOKEN%7D*N____tls%3A*N______ca*_file%3A_%2Fetc%2Fssl%2Fcerts%2Fdynatrace-certificates.pem*N______insecure%3A_false*N______reload*_interval%3A_1h*N__prometheusremotewrite%3A*N____add*_metric*_suffixes%3A_true*N____endpoint%3A_*S%7Benv%3APROMETHEUS*_URL%7D*N____max*_batch*_size*_bytes%3A_8000*N____remote*_write*_queue%3A*N______num*_consumers%3A_5*N______queue*_size%3A_4000*N____resource*_to*_telemetry*_conversion%3A*N______enabled%3A_true*N____retry*_on*_failure%3A*N______enabled%3A_true*N______initial*_interval%3A_200ms*N______max*_elapsed*_time%3A_60s*N______max*_interval%3A_5s*N____send*_metadata%3A_false*N____target*_info%3A*N______enabled%3A_false*N____timeout%3A_20s*N____tls%3A*N______insecure%3A_true*Nextensions%3A*N__health*_check%3A*N____endpoint%3A_*S%7Benv%3AMY*_POD*_IP%7D%3A13133*Nprocessors%3A*N__attributes%2Fempty%3A*N____actions%3A*N____-_action%3A_delete*N______key%3A_empty*N______pattern%3A_%5E*Bs***S*N__batch%3A*N____send*_batch*_size%3A_8000*N____timeout%3A_500ms*N__cumulativetodelta%3A_null*N__groupbyattrs%3A_null*N__groupbytrace%3A_null*N__memory*_limiter%3A*N____check*_interval%3A_5s*N____limit*_mib%3A_1024*N____spike*_limit*_mib%3A_100*N__probabilistic*_sampler%3A*N____sampling*_percentage%3A_10*N__tail*_sampling%3A*N____policies%3A*N____-_name%3A_drop*_noisy*_traces*_url*N______string*_attribute%3A*N________enabled*_regex*_matching%3A_true*N________invert*_match%3A_true*N________key%3A_url.path*N________values%3A*N________-_*B%2Fmetrics*N________-_*B%2Factuator***N________-_opentelemetry*B.proto*N________-_favicon*B.ico*N________-_*B%2Fhealth*N______type%3A_string*_attribute*N____-_name%3A_drop*_noisy*_traces*_target*N______string*_attribute%3A*N________enabled*_regex*_matching%3A_true*N________invert*_match%3A_true*N________key%3A_http.target*N________values%3A*N________-_*B%2Fmetrics*N________-_*B%2Factuator***N________-_opentelemetry*B.proto*N________-_favicon*B.ico*N________-_*B%2Fhealth*N______type%3A_string*_attribute*N__transform%3A*N____error*_mode%3A_ignore*N____metric*_statements%3A*N____-_context%3A_metric*N______statements%3A*N______-_set*Cdescription%2C_%22Measure_of_memory_committed.%22*D_where_name_*E*E_%22jvm*_memory*_committed*_bytes%22*N______-_set*Cdescription%2C_%22Measure_of_memory_used.%22*D_where_name_*E*E_%22jvm*_memory*_used*_bytes%22*Nreceivers%3A*N__hostmetrics%3A*N____collection*_interval%3A_1m*N____scrapers%3A*N______cpu%3A_null*N______load%3A_null*N______memory%3A_null*N__otlp%3A*N____protocols%3A*N______grpc%3A*N________endpoint%3A_*S%7Benv%3AMY*_POD*_IP%7D%3A4317*N______http%3A*N________endpoint%3A_*S%7Benv%3AMY*_POD*_IP%7D%3A4318*Nservice%3A*N__extensions%3A*N__-_health*_check*N__pipelines%3A*N____logs%3A*N______exporters%3A*N______-_otlphttp*N______-_otlphttp%2Fdynatrace*N______processors%3A*N______-_memory*_limiter*N______-_batch*N______-_attributes%2Fempty*N______receivers%3A*N______-_otlp*N____metrics%3A*N______exporters%3A*N______-_prometheusremotewrite*N______processors%3A*N______-_memory*_limiter*N______-_batch*N______-_groupbyattrs*N______-_transform*N______receivers%3A*N______-_otlp*N______-_hostmetrics*N____metrics%2Fdynatrace%3A*N______exporters%3A*N______-_otlphttp%2Fdynatrace*N______processors%3A*N______-_memory*_limiter*N______-_batch*N______-_groupbyattrs*N______-_transform*N______-_cumulativetodelta*N______receivers%3A*N______-_otlp*N____traces%3A*N______exporters%3A*N______-_otlp%2Ftempo*N______-_otlphttp%2Fdynatrace*N______processors%3A*N______-_memory*_limiter*N______-_groupbytrace*N______-_batch*N______-_groupbyattrs*N______-_tail*_sampling*N______receivers%3A*N______-_otlp*N__telemetry%3A*N____metrics%3A*N______readers%3A*N______-_pull%3A*N__________exporter%3A*N____________prometheus%3A*N______________host%3A_0.0.0.0*N______________port%3A_8888%7E">Outils de visualisation de la configuration de votre collecteur | OTelBin</a></li>
+                </ul>
+                <aside class="notes">
+                </aside>
+            </section>
+        </section>
+        <section>
+            <section class="section-title" data-background-image="./assets/apres.png" style="display: block;">
+                <h1 style="color: #1973eb;">🔎 Après le collecteur</h1>
+            </section>
+            <section>
+                <h1 style="color: #1973eb;">🗂️ Backends & rôles</h1>
+                <p>La jungle du <a target="_blank" href="https://landscape.cncf.io/?group=projects-and-products&view-mode=grid&category=Observability+and+Analysis">CNCF landscape</a></p>
+                <ul>
+                    <li>Metrics → Prometheus (court/long terme via remote write), Cortex/Mimir pour le passage à l'échelle.</li>
+                    <li>Traces → Tempo / Jaeger / Zipkin / solutions commerciales (New Relic, Datadog).</li>
+                    <li>Logs → Loki / ELK / solutions commerciales (Splunk, Datadog).</li>
+                </ul>
+                <aside class="notes">
+                </aside>
+            </section>
+            <section>
+                <h1 style="color: #1973eb;">🗄️ Rétention & 💸 Optimisation des coûts</h1>
+                <ul>
+                    <li>Politiques de rétention selon le type de donnée (metrics : long terme ; traces : court terme + archivage ; logs : court terme + indexation).</li>
+                    <li>Archivage long terme dans un object storage (S3, Blob Storage).</li>
+                    <li>Problématique Disaster Recory si une chaine d'appel se retrouve répartie sur 2 régions.</li>
+                    <li>RGPD, data residency : masquer/supprimer certains attributs, gérer la rétention en conséquence.</li>
+                </ul>
+                <aside class="notes">
+                </aside>
+            </section>
+            <section>
+                <h1 style="color: #1973eb;">🔗 Requêtes & corrélation</h1>
+                <ul>
+                    <li>Corrélation trace ↔ logs ↔ metrics via trace_id / span_id / labels.</li>
+                    <li>Dashboards (Grafana) sur les SLO/SLA, percentiles de latence, taux d'erreur.</li>
+                    <li>Prévoir de l'alerting générique basé sur les SLOs (burn rates, seuils d'alerte)</li>
+                </ul>
+                <aside class="notes">
+                </aside>
+            </section>
+            <section>
+                <h1 style="color: #1973eb;">🔒 Sécurité & 🛂 contrôle d'accès</h1>
+                <ul>
+                    <li>RBAC sur les dashboards et traces.</li>
+                    <li>Masquage des PII (Personally Identifiable Information).</li>
+                    <li>Audit logs.</li>
+                </ul>
+                <aside class="notes">
+                </aside>
+            </section>
+            <section>
+                <h1 style="color: #1973eb;">📉 Analytique avancée & 🤖 ML</h1>
+                <ul>
+                    <li>Utiliser traces/metrics pour la détection d'anomalies, la planification de capacité, la classification des causes racines.</li>
+                </ul>
+                <aside class="notes">
+                </aside>
+            </section>
+        </section>
+        <section>
+            <section class="section-title" data-background-image="./assets/A38.jpeg" style="display: block;">
+                <h1 style="color: #1973eb;">En dehors de la partie technique</h1>
+            </section>
+            <section>
+                <h1 style="color: #1973eb;">Votre DSI a un historique</h1>
+                <ul>
+                    <li>Le passage en radar des techno vous sera sûrement demandé.</li>
+                    <li>Des outils sont déjà en place.</li>
+                    <li>Une équipe de Suivi de Production existe.</li>
+                </ul>
+            </section>
+            <section class="section-conclusion center">
+                <h1 style="color: #1973eb;">OpenTelemetry va remplacer Dynatrace ? Kibana ? Etc..</h1>
+                <aside class="notes">
+                    <ul>
+                        <li>A chaque fois que l'on a présenté OTEL, on a toujours ouvert le débat sur la façon d'exploiter</li>
+                        <li>Alors que le collector est au centre de l'équation et permet de distribuer agnostiquement les données de télémétrie</li>
+                        <li>Peu visible</li>
+                        <li>Mal compris</li>
+                        <li>Super utile</li>
+                        <li>Non vendor locked</li>
+                    </ul>
+                </aside>
+            </section>
+            <section class="section-conclusion center">
+                <h1 style="color: #1973eb;">Gagnant, gagnant</h1>
+                <p><a target="_blank" href="https://opentelemetry.io/ecosystem/vendors/" target="_blank">Vendors | OpenTelemetry</a></p>
+                <aside class="notes">
+                    <ul>
+                        <li>Les vendeurs de solutions payantes tablent sur l'exploitation des données et leur visualisation</li>
+                        <li>On a moins peur de prendre une licence car le protocole et le format de la donnée devient standard</li>
+                    </ul>
+                </aside>
+            </section>
+            <section class="section-conclusion center">
+                <h1 style="color: #1973eb;">Quelques points négatifs</h1>
+            </section>
+            <section>
+                <h1 style="color: #1973eb;">OpenTelemetry + Green IT</h1>
+                <ul>
+                    <li>Les données d'instrumentation rentrent dans la balance des échanges réseau</li>
+                    <li>Attention à ne pas tout observer par défaut.</li>
+                    <li>Le sampling est votre ami.</li>
+                    <li>Le fait de centraliser plutôt que chaque process embarque son agent et son jeu de data spécifique va quand même dans le bon sens.</li>
+                </ul>
+            </section>
+        </section>
+        <section>
+            <section class="section-conclusion center">
+                <h1 style="color: #1973eb;">Récapitulatif</h1>
+                <aside class="notes">
+                    <ul>
+                        <li>Il n'y a pas d'alternative à OpenTelemetry, c'est le standard de facto</li>
+                        <li>Si on ne bascule pas sur le standard, on va se retrouver avec des solutions propriétaires</li>
+                        <li>Aculturation des équipes</li>
+                        <li>Instrumentation rigoureuse et cohérente</li>
+                        <li>Collector bien dimensionné et résilient</li>
+                        <li>Backends adaptés aux besoins et aux coûts</li>
+                        <li>Ne pas oublier les aspects humains et organisationnels</li>
+                    </ul>
+                </aside>
+            </section>
+            <section class="section-conclusion center">
+                <h1 style="color: #1973eb;">Merci !</h1>
+            </section>
+        </section>
+    </div>
+</div>
+
+
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/plugin/notes/notes.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/plugin/markdown/markdown.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/plugin/highlight/highlight.min.js"></script>-->
+<script src="./js/reveal.min.js"></script>
+<script src="./js/notes.min.js"></script>
+<script src="./js/markdown.min.js"></script>
+<script src="./js/highlight.min.js"></script>
+<script>
+    // More info about initialization & config:
+    // - https://revealjs.com/initialization/
+    // - https://revealjs.com/config/
+    Reveal.initialize({
+        hash: true,
+        hashOneBasedIndex: true,
+        respondToHashChanges: true,
+        history: true,
+        width: 1280,
+        height: 720,
+        autoPlayMedia: true,
+        // Learn about plugins: https://revealjs.com/plugins/
+        plugins: [RevealMarkdown, RevealHighlight, RevealNotes]
+    });
+</script>
+</body>
+</html>
